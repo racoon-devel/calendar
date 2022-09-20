@@ -5,6 +5,7 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
 	"github.com/racoon-devel/calendar/internal/config"
+	"github.com/racoon-devel/calendar/internal/server"
 	"os"
 )
 
@@ -25,6 +26,11 @@ func main() {
 		log.Fatalf("cannot load configuration: %s", err)
 	}
 	log.Infof("configuration loaded: %+v", cfg)
+
+	srv := server.Server{}
+	if err := srv.ListenAndServer(cfg.Http.Endpoint); err != nil {
+		log.Fatalf("server error: %s", err)
+	}
 }
 
 func loadConfig(file string) (cfg config.Configuration, err error) {

@@ -1,9 +1,105 @@
 swagger: '2.0'
-tags:
-  - name: user
-    description: Calendar user
-paths:
 info:
   version: 1.0.0
   title: Calendar API
   description: API for Calendar demo project
+
+tags:
+  - name: user
+    description: Calendar user
+
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Создание пользователя
+      description: Доступно без аутентификации, может вызываться при регистрации нового пользователя
+      operationId: createUser
+      parameters:
+        - name: user
+          in: body
+          schema:
+            $ref: "#/definitions/NewUser"
+
+      responses:
+        '201':
+          description: OK
+          schema:
+            $ref: "#/definitions/NewUserResponse"
+        '400':
+          description: Не удалось выполнить запрос (пользователь уже существует)
+          schema:
+            $ref: "#/definitions/UserErrorResponse"
+        '500':
+          description: Ошибка на стороне сервера
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+
+definitions:
+  UserErrorResponse:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        default: 700
+        enum:
+          - 700
+        description: Код ошибки (700 - пользователь с таким логином уже существует)
+      message:
+        type: string
+        description: Описание ошибки
+  ErrorResponse:
+    type: object
+    properties:
+      code:
+        type: integer
+        default: 500
+        enum:
+          - 500
+        description: Код ошибки
+      message:
+        type: string
+        description: Описание ошибки
+  NewUserResponse:
+    type: object
+    required:
+      - id
+    additionalProperties: false
+    properties:
+      id:
+        type: integer
+        description: Идентификатор созданного пользователя
+  NewUser:
+    type: object
+    additionalProperties: false
+    required:
+      - login
+      - name
+      - surname
+      - password
+    properties:
+      login:
+        type: string
+        minLength: 1
+        maxLength: 32
+        description: Логин для входа в систему
+      name:
+        type: string
+        minLength: 1
+        description: Имя пользователя
+      surname:
+        type: string
+        minLength: 1
+        description: Фамилия пользователя
+      password:
+        type: string
+        minLength: 8
+        maxLength: 32
+        description: Пароль
+
+
