@@ -1,0 +1,12 @@
+{
+  "database": {
+    "name": "calendar",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "user": "calendar",
+    "password": "abc"
+  },
+  "http": {
+    "endpoint": "0.0.0.0:8080"
+  }
+}

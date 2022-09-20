@@ -1,0 +1,9 @@
+swagger: '2.0'
+tags:
+  - name: user
+    description: Calendar user
+paths:
+info:
+  version: 1.0.0
+  title: Calendar API
+  description: API for Calendar demo project
