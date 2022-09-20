@@ -6,7 +6,9 @@ info:
 
 tags:
   - name: user
-    description: Calendar user
+    description: Пользователь календаря
+  - name: meeting
+    description: Встреча
 
 paths:
   /user:
@@ -20,52 +22,77 @@ paths:
         - name: user
           in: body
           schema:
-            $ref: "#/definitions/NewUser"
+            $ref: "#/definitions/CreateUserRequest"
 
       responses:
         '201':
           description: OK
           schema:
-            $ref: "#/definitions/NewUserResponse"
+            $ref: "#/definitions/CreateUserResponse"
         '400':
           description: Не удалось выполнить запрос (пользователь уже существует)
           schema:
-            $ref: "#/definitions/UserErrorResponse"
+            $ref: "#/definitions/Dummy"
         '500':
           description: Ошибка на стороне сервера
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/Dummy"
+    get:
+      tags:
+        - user
+      summary: Получение списка всех пользователей
+      description: Вернуть список имен и фамилий пользователей (требует авторизацию)
+      responses:
+        '200':
+          description: Список пользователей (в идеале бы прикрутить поиск по имени и фамилии, но для простоты оставлю так)
+          schema:
+            $ref: "#/definitions/GetUsersResponse"
 
+        '500':
+          description: Ошибка на стороне сервера
+          schema:
+            $ref: "#/definitions/Dummy"
+  /user/login:
+    post:
+      tags:
+        - user
+      summary: Вход в систему
+      parameters:
+        - name: credentials
+          in: body
+          schema:
+            $ref: "#/definitions/LoginRequest"
+      responses:
+        '200':
+          description: Вход выполнен успешно
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        '403':
+          description: Доступ запрещен
+          schema:
+            $ref: "#/definitions/Dummy"
+        '500':
+          description: Ошибка на стороне сервера
+          schema:
+            $ref: "#/definitions/Dummy"
 
 definitions:
-  UserErrorResponse:
+  Dummy:
     type: object
-    required:
-      - code
-      - message
-    properties:
-      code:
-        type: integer
-        default: 700
-        enum:
-          - 700
-        description: Код ошибки (700 - пользователь с таким логином уже существует)
-      message:
-        type: string
-        description: Описание ошибки
-  ErrorResponse:
-    type: object
-    properties:
-      code:
-        type: integer
-        default: 500
-        enum:
-          - 500
-        description: Код ошибки
-      message:
-        type: string
-        description: Описание ошибки
-  NewUserResponse:
+
+  Login:
+    type: string
+    minLength: 1
+    maxLength: 32
+    description: Логин для входа в систему
+
+  Password:
+    type: string
+    minLength: 8
+    maxLength: 32
+    description: Пароль
+
+  CreateUserResponse:
     type: object
     required:
       - id
@@ -74,7 +101,7 @@ definitions:
       id:
         type: integer
         description: Идентификатор созданного пользователя
-  NewUser:
+  CreateUserRequest:
     type: object
     additionalProperties: false
     required:
@@ -84,10 +111,7 @@ definitions:
       - password
     properties:
       login:
-        type: string
-        minLength: 1
-        maxLength: 32
-        description: Логин для входа в систему
+        $ref: "#/definitions/Login"
       name:
         type: string
         minLength: 1
@@ -97,9 +121,39 @@ definitions:
         minLength: 1
         description: Фамилия пользователя
       password:
+        $ref: "#/definitions/Password"
+  GetUsersResponse:
+    type: object
+    required:
+      - users
+    properties:
+      users:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            surname:
+              type: string
+
+  LoginRequest:
+    type: object
+    required:
+      - login
+      - password
+    properties:
+      login:
+        $ref: "#/definitions/Login"
+      password:
+        $ref: "#/definitions/Password"
+
+  LoginResponse:
+    type: object
+    properties:
+      access_token:
         type: string
-        minLength: 8
-        maxLength: 32
-        description: Пароль
 
 
