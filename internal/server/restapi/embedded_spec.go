@@ -18,6 +18,12 @@ var (
 
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "swagger": "2.0",
   "info": {
     "description": "API for Calendar demo project",
@@ -27,6 +33,11 @@ func init() {
   "paths": {
     "/invite": {
       "get": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
         "tags": [
           "invite"
         ],
@@ -39,10 +50,16 @@ func init() {
               "$ref": "#/definitions/GetInvitesResponse"
             }
           },
+          "401": {
+            "description": "Требуется авторизация",
+            "schema": {
+              "$ref": "#/definitions/GetInvitesError"
+            }
+          },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/GetInvitesError"
             }
           }
         }
@@ -50,6 +67,11 @@ func init() {
     },
     "/meeting": {
       "post": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
         "tags": [
           "meeting"
         ],
@@ -74,13 +96,19 @@ func init() {
           "400": {
             "description": "Невозможно выполнить запрос",
             "schema": {
-              "$ref": "#/definitions/CreateMeetingErrorResponse"
+              "$ref": "#/definitions/CreateMeetingError"
+            }
+          },
+          "401": {
+            "description": "Требуется авторизация",
+            "schema": {
+              "$ref": "#/definitions/CreateMeetingError"
             }
           },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/CreateMeetingError"
             }
           }
         }
@@ -88,6 +116,11 @@ func init() {
     },
     "/user": {
       "get": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
         "description": "Вернуть список имен и фамилий пользователей (требует авторизацию)",
         "tags": [
           "user"
@@ -101,10 +134,16 @@ func init() {
               "$ref": "#/definitions/GetUsersResponse"
             }
           },
+          "401": {
+            "description": "Требуется авторизация",
+            "schema": {
+              "$ref": "#/definitions/GetUsersError"
+            }
+          },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/GetUsersError"
             }
           }
         }
@@ -132,16 +171,16 @@ func init() {
               "$ref": "#/definitions/CreateUserResponse"
             }
           },
-          "400": {
+          "409": {
             "description": "Не удалось выполнить запрос (пользователь уже существует)",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/CreateUserError"
             }
           },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/CreateUserError"
             }
           }
         }
@@ -173,13 +212,13 @@ func init() {
           "403": {
             "description": "Доступ запрещен",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/LoginError"
             }
           },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/LoginError"
             }
           }
         }
@@ -187,19 +226,20 @@ func init() {
     }
   },
   "definitions": {
-    "CreateMeetingErrorResponse": {
+    "CreateMeetingError": {
       "type": "object",
       "required": [
         "code"
       ],
       "properties": {
         "code": {
-          "description": "Код ошибки (700 - пользователь, создающий встречу занят в указанное время, 701 - неверный формат для RRULE, 702 - не найден приглашенный пользователь)",
+          "description": "Код ошибки\n400 - неверный формат RRULE\n401 - требуется автоизация\n404 - не найден один из приглашенных пользователей\n700 - текущий пользователь занят в момент встречи\n",
           "type": "integer",
           "enum": [
-            700,
-            701,
-            702
+            400,
+            401,
+            404,
+            700
           ]
         }
       }
@@ -274,6 +314,21 @@ func init() {
         }
       }
     },
+    "CreateUserError": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки\n409 - пользователь уже существует\n500 - ошибка на стороне сервера\n",
+          "enum": [
+            409,
+            500
+          ]
+        }
+      }
+    },
     "CreateUserRequest": {
       "type": "object",
       "required": [
@@ -315,8 +370,21 @@ func init() {
       },
       "additionalProperties": false
     },
-    "Dummy": {
-      "type": "object"
+    "GetInvitesError": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки\n401 - требуется авторизация\n500 - ошибка на стороне сервера\n",
+          "type": "integer",
+          "enum": [
+            401,
+            500
+          ]
+        }
+      }
     },
     "GetInvitesResponse": {
       "type": "object",
@@ -330,6 +398,21 @@ func init() {
             "description": "Идентификаторы встреч, на которые пригласили пользователя",
             "type": "integer"
           }
+        }
+      }
+    },
+    "GetUsersError": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки\n401 - требуется авторизация\n500 - ошибка на стороне сервера\n",
+          "enum": [
+            401,
+            500
+          ]
         }
       }
     },
@@ -364,6 +447,21 @@ func init() {
       "maxLength": 32,
       "minLength": 1
     },
+    "LoginError": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки\n403 - доступ запрещен\n500 - ошибка на стороне сервера\n",
+          "enum": [
+            403,
+            500
+          ]
+        }
+      }
+    },
     "LoginRequest": {
       "type": "object",
       "required": [
@@ -392,6 +490,16 @@ func init() {
       "type": "string",
       "maxLength": 32,
       "minLength": 8
+    },
+    "principal": {
+      "type": "string"
+    }
+  },
+  "securityDefinitions": {
+    "key": {
+      "type": "apiKey",
+      "name": "x-token",
+      "in": "header"
     }
   },
   "tags": [
@@ -410,6 +518,12 @@ func init() {
   ]
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "swagger": "2.0",
   "info": {
     "description": "API for Calendar demo project",
@@ -419,6 +533,11 @@ func init() {
   "paths": {
     "/invite": {
       "get": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
         "tags": [
           "invite"
         ],
@@ -431,10 +550,16 @@ func init() {
               "$ref": "#/definitions/GetInvitesResponse"
             }
           },
+          "401": {
+            "description": "Требуется авторизация",
+            "schema": {
+              "$ref": "#/definitions/GetInvitesError"
+            }
+          },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/GetInvitesError"
             }
           }
         }
@@ -442,6 +567,11 @@ func init() {
     },
     "/meeting": {
       "post": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
         "tags": [
           "meeting"
         ],
@@ -466,13 +596,19 @@ func init() {
           "400": {
             "description": "Невозможно выполнить запрос",
             "schema": {
-              "$ref": "#/definitions/CreateMeetingErrorResponse"
+              "$ref": "#/definitions/CreateMeetingError"
+            }
+          },
+          "401": {
+            "description": "Требуется авторизация",
+            "schema": {
+              "$ref": "#/definitions/CreateMeetingError"
             }
           },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/CreateMeetingError"
             }
           }
         }
@@ -480,6 +616,11 @@ func init() {
     },
     "/user": {
       "get": {
+        "security": [
+          {
+            "key": []
+          }
+        ],
         "description": "Вернуть список имен и фамилий пользователей (требует авторизацию)",
         "tags": [
           "user"
@@ -493,10 +634,16 @@ func init() {
               "$ref": "#/definitions/GetUsersResponse"
             }
           },
+          "401": {
+            "description": "Требуется авторизация",
+            "schema": {
+              "$ref": "#/definitions/GetUsersError"
+            }
+          },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/GetUsersError"
             }
           }
         }
@@ -524,16 +671,16 @@ func init() {
               "$ref": "#/definitions/CreateUserResponse"
             }
           },
-          "400": {
+          "409": {
             "description": "Не удалось выполнить запрос (пользователь уже существует)",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/CreateUserError"
             }
           },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/CreateUserError"
             }
           }
         }
@@ -565,13 +712,13 @@ func init() {
           "403": {
             "description": "Доступ запрещен",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/LoginError"
             }
           },
           "500": {
             "description": "Ошибка на стороне сервера",
             "schema": {
-              "$ref": "#/definitions/Dummy"
+              "$ref": "#/definitions/LoginError"
             }
           }
         }
@@ -579,19 +726,20 @@ func init() {
     }
   },
   "definitions": {
-    "CreateMeetingErrorResponse": {
+    "CreateMeetingError": {
       "type": "object",
       "required": [
         "code"
       ],
       "properties": {
         "code": {
-          "description": "Код ошибки (700 - пользователь, создающий встречу занят в указанное время, 701 - неверный формат для RRULE, 702 - не найден приглашенный пользователь)",
+          "description": "Код ошибки\n400 - неверный формат RRULE\n401 - требуется автоизация\n404 - не найден один из приглашенных пользователей\n700 - текущий пользователь занят в момент встречи\n",
           "type": "integer",
           "enum": [
-            700,
-            701,
-            702
+            400,
+            401,
+            404,
+            700
           ]
         }
       }
@@ -666,6 +814,21 @@ func init() {
         }
       }
     },
+    "CreateUserError": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки\n409 - пользователь уже существует\n500 - ошибка на стороне сервера\n",
+          "enum": [
+            409,
+            500
+          ]
+        }
+      }
+    },
     "CreateUserRequest": {
       "type": "object",
       "required": [
@@ -707,8 +870,21 @@ func init() {
       },
       "additionalProperties": false
     },
-    "Dummy": {
-      "type": "object"
+    "GetInvitesError": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки\n401 - требуется авторизация\n500 - ошибка на стороне сервера\n",
+          "type": "integer",
+          "enum": [
+            401,
+            500
+          ]
+        }
+      }
     },
     "GetInvitesResponse": {
       "type": "object",
@@ -722,6 +898,21 @@ func init() {
             "description": "Идентификаторы встреч, на которые пригласили пользователя",
             "type": "integer"
           }
+        }
+      }
+    },
+    "GetUsersError": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки\n401 - требуется авторизация\n500 - ошибка на стороне сервера\n",
+          "enum": [
+            401,
+            500
+          ]
         }
       }
     },
@@ -759,6 +950,21 @@ func init() {
       "maxLength": 32,
       "minLength": 1
     },
+    "LoginError": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки\n403 - доступ запрещен\n500 - ошибка на стороне сервера\n",
+          "enum": [
+            403,
+            500
+          ]
+        }
+      }
+    },
     "LoginRequest": {
       "type": "object",
       "required": [
@@ -787,6 +993,16 @@ func init() {
       "type": "string",
       "maxLength": 32,
       "minLength": 8
+    },
+    "principal": {
+      "type": "string"
+    }
+  },
+  "securityDefinitions": {
+    "key": {
+      "type": "apiKey",
+      "name": "x-token",
+      "in": "header"
     }
   },
   "tags": [

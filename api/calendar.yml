@@ -4,6 +4,17 @@ info:
   title: Calendar API
   description: API for Calendar demo project
 
+consumes:
+  - application/json
+produces:
+  - application/json
+
+securityDefinitions:
+  key:
+    type: apiKey
+    in: header
+    name: x-token
+
 tags:
   - name: user
     description: Пользователь календаря
@@ -31,14 +42,15 @@ paths:
           description: OK
           schema:
             $ref: "#/definitions/CreateUserResponse"
-        '400':
+        '409':
           description: Не удалось выполнить запрос (пользователь уже существует)
           schema:
-            $ref: "#/definitions/Dummy"
+            $ref: "#/definitions/CreateUserError"
         '500':
           description: Ошибка на стороне сервера
           schema:
-            $ref: "#/definitions/Dummy"
+            $ref: "#/definitions/CreateUserError"
+
     get:
       tags:
         - user
@@ -50,11 +62,17 @@ paths:
           description: Список пользователей (в идеале бы прикрутить поиск по имени и фамилии, но для простоты оставлю так)
           schema:
             $ref: "#/definitions/GetUsersResponse"
-
+        '401':
+          description: Требуется авторизация
+          schema:
+            $ref: "#/definitions/GetUsersError"
         '500':
           description: Ошибка на стороне сервера
           schema:
-            $ref: "#/definitions/Dummy"
+            $ref: "#/definitions/GetUsersError"
+      security:
+        - key: [ ]
+
   /user/login:
     post:
       tags:
@@ -74,11 +92,11 @@ paths:
         '403':
           description: Доступ запрещен
           schema:
-            $ref: "#/definitions/Dummy"
+            $ref: "#/definitions/LoginError"
         '500':
           description: Ошибка на стороне сервера
           schema:
-            $ref: "#/definitions/Dummy"
+            $ref: "#/definitions/LoginError"
   /meeting:
     post:
       tags:
@@ -98,11 +116,17 @@ paths:
         '400':
           description: Невозможно выполнить запрос
           schema:
-            $ref: "#/definitions/CreateMeetingErrorResponse"
+            $ref: "#/definitions/CreateMeetingError"
+        '401':
+          description: Требуется авторизация
+          schema:
+            $ref: "#/definitions/CreateMeetingError"
         '500':
           description: Ошибка на стороне сервера
           schema:
-            $ref: "#/definitions/Dummy"
+            $ref: "#/definitions/CreateMeetingError"
+      security:
+        - key: [ ]
 
   /invite:
     get:
@@ -115,15 +139,18 @@ paths:
           description: Список приглашений
           schema:
             $ref: "#/definitions/GetInvitesResponse"
+        '401':
+          description: Требуется авторизация
+          schema:
+            $ref: "#/definitions/GetInvitesError"
         '500':
           description: Ошибка на стороне сервера
           schema:
-            $ref: "#/definitions/Dummy"
+            $ref: "#/definitions/GetInvitesError"
+      security:
+        - key: [ ]
 
 definitions:
-  Dummy:
-    type: object
-
   Login:
     type: string
     minLength: 1
@@ -145,6 +172,7 @@ definitions:
       id:
         type: integer
         description: Идентификатор созданного пользователя
+
   CreateUserRequest:
     type: object
     additionalProperties: false
@@ -166,6 +194,21 @@ definitions:
         description: Фамилия пользователя
       password:
         $ref: "#/definitions/Password"
+
+  CreateUserError:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        description: |
+          Код ошибки
+          409 - пользователь уже существует
+          500 - ошибка на стороне сервера
+        enum:
+          - 409
+          - 500
+
   GetUsersResponse:
     type: object
     required:
@@ -183,6 +226,19 @@ definitions:
             surname:
               type: string
 
+  GetUsersError:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        description: |
+          Код ошибки
+          401 - требуется авторизация
+          500 - ошибка на стороне сервера
+        enum:
+          - 401
+          - 500
   LoginRequest:
     type: object
     required:
@@ -199,6 +255,20 @@ definitions:
     properties:
       accessToken:
         type: string
+
+  LoginError:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        description: |
+          Код ошибки
+          403 - доступ запрещен
+          500 - ошибка на стороне сервера
+        enum:
+          - 403
+          - 500
 
   CreateMeetingRequest:
     type: object
@@ -258,18 +328,24 @@ definitions:
         type: integer
         description: ID созданной задачи
 
-  CreateMeetingErrorResponse:
+  CreateMeetingError:
     type: object
     required:
       - code
     properties:
       code:
         type: integer
-        description: Код ошибки (700 - пользователь, создающий встречу занят в указанное время, 701 - неверный формат для RRULE, 702 - не найден приглашенный пользователь)
+        description: |
+          Код ошибки
+          400 - неверный формат RRULE
+          401 - требуется автоизация
+          404 - не найден один из приглашенных пользователей
+          700 - текущий пользователь занят в момент встречи
         enum:
+          - 400
+          - 401
+          - 404
           - 700
-          - 701
-          - 702
 
   GetInvitesResponse:
     type: object
@@ -281,3 +357,21 @@ definitions:
         items:
           type: integer
           description: Идентификаторы встреч, на которые пригласили пользователя
+
+  GetInvitesError:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        type: integer
+        enum:
+          - 401
+          - 500
+        description: |
+          Код ошибки
+          401 - требуется авторизация
+          500 - ошибка на стороне сервера
+
+  principal:
+    type: string

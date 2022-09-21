@@ -71,7 +71,7 @@ type LoginUserForbidden struct {
 	/*
 	  In: Body
 	*/
-	Payload models.Dummy `json:"body,omitempty"`
+	Payload *models.LoginError `json:"body,omitempty"`
 }
 
 // NewLoginUserForbidden creates LoginUserForbidden with default headers values
@@ -81,13 +81,13 @@ func NewLoginUserForbidden() *LoginUserForbidden {
 }
 
 // WithPayload adds the payload to the login user forbidden response
-func (o *LoginUserForbidden) WithPayload(payload models.Dummy) *LoginUserForbidden {
+func (o *LoginUserForbidden) WithPayload(payload *models.LoginError) *LoginUserForbidden {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the login user forbidden response
-func (o *LoginUserForbidden) SetPayload(payload models.Dummy) {
+func (o *LoginUserForbidden) SetPayload(payload *models.LoginError) {
 	o.Payload = payload
 }
 
@@ -95,9 +95,11 @@ func (o *LoginUserForbidden) SetPayload(payload models.Dummy) {
 func (o *LoginUserForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(403)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }
 
@@ -114,7 +116,7 @@ type LoginUserInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.Dummy `json:"body,omitempty"`
+	Payload *models.LoginError `json:"body,omitempty"`
 }
 
 // NewLoginUserInternalServerError creates LoginUserInternalServerError with default headers values
@@ -124,13 +126,13 @@ func NewLoginUserInternalServerError() *LoginUserInternalServerError {
 }
 
 // WithPayload adds the payload to the login user internal server error response
-func (o *LoginUserInternalServerError) WithPayload(payload models.Dummy) *LoginUserInternalServerError {
+func (o *LoginUserInternalServerError) WithPayload(payload *models.LoginError) *LoginUserInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the login user internal server error response
-func (o *LoginUserInternalServerError) SetPayload(payload models.Dummy) {
+func (o *LoginUserInternalServerError) SetPayload(payload *models.LoginError) {
 	o.Payload = payload
 }
 
@@ -138,8 +140,10 @@ func (o *LoginUserInternalServerError) SetPayload(payload models.Dummy) {
 func (o *LoginUserInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }

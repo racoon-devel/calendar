@@ -71,7 +71,7 @@ type CreateMeetingBadRequest struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.CreateMeetingErrorResponse `json:"body,omitempty"`
+	Payload *models.CreateMeetingError `json:"body,omitempty"`
 }
 
 // NewCreateMeetingBadRequest creates CreateMeetingBadRequest with default headers values
@@ -81,13 +81,13 @@ func NewCreateMeetingBadRequest() *CreateMeetingBadRequest {
 }
 
 // WithPayload adds the payload to the create meeting bad request response
-func (o *CreateMeetingBadRequest) WithPayload(payload *models.CreateMeetingErrorResponse) *CreateMeetingBadRequest {
+func (o *CreateMeetingBadRequest) WithPayload(payload *models.CreateMeetingError) *CreateMeetingBadRequest {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the create meeting bad request response
-func (o *CreateMeetingBadRequest) SetPayload(payload *models.CreateMeetingErrorResponse) {
+func (o *CreateMeetingBadRequest) SetPayload(payload *models.CreateMeetingError) {
 	o.Payload = payload
 }
 
@@ -95,6 +95,51 @@ func (o *CreateMeetingBadRequest) SetPayload(payload *models.CreateMeetingErrorR
 func (o *CreateMeetingBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(400)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// CreateMeetingUnauthorizedCode is the HTTP code returned for type CreateMeetingUnauthorized
+const CreateMeetingUnauthorizedCode int = 401
+
+/*
+CreateMeetingUnauthorized Требуется авторизация
+
+swagger:response createMeetingUnauthorized
+*/
+type CreateMeetingUnauthorized struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.CreateMeetingError `json:"body,omitempty"`
+}
+
+// NewCreateMeetingUnauthorized creates CreateMeetingUnauthorized with default headers values
+func NewCreateMeetingUnauthorized() *CreateMeetingUnauthorized {
+
+	return &CreateMeetingUnauthorized{}
+}
+
+// WithPayload adds the payload to the create meeting unauthorized response
+func (o *CreateMeetingUnauthorized) WithPayload(payload *models.CreateMeetingError) *CreateMeetingUnauthorized {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the create meeting unauthorized response
+func (o *CreateMeetingUnauthorized) SetPayload(payload *models.CreateMeetingError) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *CreateMeetingUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(401)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {
@@ -116,7 +161,7 @@ type CreateMeetingInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.Dummy `json:"body,omitempty"`
+	Payload *models.CreateMeetingError `json:"body,omitempty"`
 }
 
 // NewCreateMeetingInternalServerError creates CreateMeetingInternalServerError with default headers values
@@ -126,13 +171,13 @@ func NewCreateMeetingInternalServerError() *CreateMeetingInternalServerError {
 }
 
 // WithPayload adds the payload to the create meeting internal server error response
-func (o *CreateMeetingInternalServerError) WithPayload(payload models.Dummy) *CreateMeetingInternalServerError {
+func (o *CreateMeetingInternalServerError) WithPayload(payload *models.CreateMeetingError) *CreateMeetingInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the create meeting internal server error response
-func (o *CreateMeetingInternalServerError) SetPayload(payload models.Dummy) {
+func (o *CreateMeetingInternalServerError) SetPayload(payload *models.CreateMeetingError) {
 	o.Payload = payload
 }
 
@@ -140,8 +185,10 @@ func (o *CreateMeetingInternalServerError) SetPayload(payload models.Dummy) {
 func (o *CreateMeetingInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }

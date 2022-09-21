@@ -58,6 +58,51 @@ func (o *GetUsersOK) WriteResponse(rw http.ResponseWriter, producer runtime.Prod
 	}
 }
 
+// GetUsersUnauthorizedCode is the HTTP code returned for type GetUsersUnauthorized
+const GetUsersUnauthorizedCode int = 401
+
+/*
+GetUsersUnauthorized Требуется авторизация
+
+swagger:response getUsersUnauthorized
+*/
+type GetUsersUnauthorized struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.GetUsersError `json:"body,omitempty"`
+}
+
+// NewGetUsersUnauthorized creates GetUsersUnauthorized with default headers values
+func NewGetUsersUnauthorized() *GetUsersUnauthorized {
+
+	return &GetUsersUnauthorized{}
+}
+
+// WithPayload adds the payload to the get users unauthorized response
+func (o *GetUsersUnauthorized) WithPayload(payload *models.GetUsersError) *GetUsersUnauthorized {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get users unauthorized response
+func (o *GetUsersUnauthorized) SetPayload(payload *models.GetUsersError) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetUsersUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(401)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // GetUsersInternalServerErrorCode is the HTTP code returned for type GetUsersInternalServerError
 const GetUsersInternalServerErrorCode int = 500
 
@@ -71,7 +116,7 @@ type GetUsersInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.Dummy `json:"body,omitempty"`
+	Payload *models.GetUsersError `json:"body,omitempty"`
 }
 
 // NewGetUsersInternalServerError creates GetUsersInternalServerError with default headers values
@@ -81,13 +126,13 @@ func NewGetUsersInternalServerError() *GetUsersInternalServerError {
 }
 
 // WithPayload adds the payload to the get users internal server error response
-func (o *GetUsersInternalServerError) WithPayload(payload models.Dummy) *GetUsersInternalServerError {
+func (o *GetUsersInternalServerError) WithPayload(payload *models.GetUsersError) *GetUsersInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get users internal server error response
-func (o *GetUsersInternalServerError) SetPayload(payload models.Dummy) {
+func (o *GetUsersInternalServerError) SetPayload(payload *models.GetUsersError) {
 	o.Payload = payload
 }
 
@@ -95,8 +140,10 @@ func (o *GetUsersInternalServerError) SetPayload(payload models.Dummy) {
 func (o *GetUsersInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }

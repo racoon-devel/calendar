@@ -58,46 +58,48 @@ func (o *CreateUserCreated) WriteResponse(rw http.ResponseWriter, producer runti
 	}
 }
 
-// CreateUserBadRequestCode is the HTTP code returned for type CreateUserBadRequest
-const CreateUserBadRequestCode int = 400
+// CreateUserConflictCode is the HTTP code returned for type CreateUserConflict
+const CreateUserConflictCode int = 409
 
 /*
-CreateUserBadRequest Не удалось выполнить запрос (пользователь уже существует)
+CreateUserConflict Не удалось выполнить запрос (пользователь уже существует)
 
-swagger:response createUserBadRequest
+swagger:response createUserConflict
 */
-type CreateUserBadRequest struct {
+type CreateUserConflict struct {
 
 	/*
 	  In: Body
 	*/
-	Payload models.Dummy `json:"body,omitempty"`
+	Payload *models.CreateUserError `json:"body,omitempty"`
 }
 
-// NewCreateUserBadRequest creates CreateUserBadRequest with default headers values
-func NewCreateUserBadRequest() *CreateUserBadRequest {
+// NewCreateUserConflict creates CreateUserConflict with default headers values
+func NewCreateUserConflict() *CreateUserConflict {
 
-	return &CreateUserBadRequest{}
+	return &CreateUserConflict{}
 }
 
-// WithPayload adds the payload to the create user bad request response
-func (o *CreateUserBadRequest) WithPayload(payload models.Dummy) *CreateUserBadRequest {
+// WithPayload adds the payload to the create user conflict response
+func (o *CreateUserConflict) WithPayload(payload *models.CreateUserError) *CreateUserConflict {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the create user bad request response
-func (o *CreateUserBadRequest) SetPayload(payload models.Dummy) {
+// SetPayload sets the payload to the create user conflict response
+func (o *CreateUserConflict) SetPayload(payload *models.CreateUserError) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *CreateUserBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *CreateUserConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(400)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	rw.WriteHeader(409)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }
 
@@ -114,7 +116,7 @@ type CreateUserInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.Dummy `json:"body,omitempty"`
+	Payload *models.CreateUserError `json:"body,omitempty"`
 }
 
 // NewCreateUserInternalServerError creates CreateUserInternalServerError with default headers values
@@ -124,13 +126,13 @@ func NewCreateUserInternalServerError() *CreateUserInternalServerError {
 }
 
 // WithPayload adds the payload to the create user internal server error response
-func (o *CreateUserInternalServerError) WithPayload(payload models.Dummy) *CreateUserInternalServerError {
+func (o *CreateUserInternalServerError) WithPayload(payload *models.CreateUserError) *CreateUserInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the create user internal server error response
-func (o *CreateUserInternalServerError) SetPayload(payload models.Dummy) {
+func (o *CreateUserInternalServerError) SetPayload(payload *models.CreateUserError) {
 	o.Payload = payload
 }
 
@@ -138,8 +140,10 @@ func (o *CreateUserInternalServerError) SetPayload(payload models.Dummy) {
 func (o *CreateUserInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }

@@ -58,6 +58,51 @@ func (o *GetInvitesOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 	}
 }
 
+// GetInvitesUnauthorizedCode is the HTTP code returned for type GetInvitesUnauthorized
+const GetInvitesUnauthorizedCode int = 401
+
+/*
+GetInvitesUnauthorized Требуется авторизация
+
+swagger:response getInvitesUnauthorized
+*/
+type GetInvitesUnauthorized struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.GetInvitesError `json:"body,omitempty"`
+}
+
+// NewGetInvitesUnauthorized creates GetInvitesUnauthorized with default headers values
+func NewGetInvitesUnauthorized() *GetInvitesUnauthorized {
+
+	return &GetInvitesUnauthorized{}
+}
+
+// WithPayload adds the payload to the get invites unauthorized response
+func (o *GetInvitesUnauthorized) WithPayload(payload *models.GetInvitesError) *GetInvitesUnauthorized {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get invites unauthorized response
+func (o *GetInvitesUnauthorized) SetPayload(payload *models.GetInvitesError) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetInvitesUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(401)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // GetInvitesInternalServerErrorCode is the HTTP code returned for type GetInvitesInternalServerError
 const GetInvitesInternalServerErrorCode int = 500
 
@@ -71,7 +116,7 @@ type GetInvitesInternalServerError struct {
 	/*
 	  In: Body
 	*/
-	Payload models.Dummy `json:"body,omitempty"`
+	Payload *models.GetInvitesError `json:"body,omitempty"`
 }
 
 // NewGetInvitesInternalServerError creates GetInvitesInternalServerError with default headers values
@@ -81,13 +126,13 @@ func NewGetInvitesInternalServerError() *GetInvitesInternalServerError {
 }
 
 // WithPayload adds the payload to the get invites internal server error response
-func (o *GetInvitesInternalServerError) WithPayload(payload models.Dummy) *GetInvitesInternalServerError {
+func (o *GetInvitesInternalServerError) WithPayload(payload *models.GetInvitesError) *GetInvitesInternalServerError {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get invites internal server error response
-func (o *GetInvitesInternalServerError) SetPayload(payload models.Dummy) {
+func (o *GetInvitesInternalServerError) SetPayload(payload *models.GetInvitesError) {
 	o.Payload = payload
 }
 
@@ -95,8 +140,10 @@ func (o *GetInvitesInternalServerError) SetPayload(payload models.Dummy) {
 func (o *GetInvitesInternalServerError) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(500)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }

@@ -10,11 +10,14 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
+	"github.com/racoon-devel/calendar/internal/server/models"
 	"github.com/racoon-devel/calendar/internal/server/restapi/operations"
+	"github.com/racoon-devel/calendar/internal/server/restapi/operations/invite"
+	"github.com/racoon-devel/calendar/internal/server/restapi/operations/meeting"
 	"github.com/racoon-devel/calendar/internal/server/restapi/operations/user"
 )
 
-//go:generate swagger generate server --target ../../server --name Server --spec ../../../api/calendar.yml --principal interface{} --exclude-main --exclude-spec
+//go:generate swagger generate server --target ../../server --name Server --spec ../../../api/calendar.yml --principal models.Principal --exclude-main
 
 func configureFlags(api *operations.ServerAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -38,9 +41,42 @@ func configureAPI(api *operations.ServerAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
+	// Applies when the "x-token" header is set
+	if api.KeyAuth == nil {
+		api.KeyAuth = func(token string) (*models.Principal, error) {
+			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
+		}
+	}
+
+	// Set your custom authorizer if needed. Default one is security.Authorized()
+	// Expected interface runtime.Authorizer
+	//
+	// Example:
+	// api.APIAuthorizer = security.Authorized()
+
+	if api.MeetingCreateMeetingHandler == nil {
+		api.MeetingCreateMeetingHandler = meeting.CreateMeetingHandlerFunc(func(params meeting.CreateMeetingParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation meeting.CreateMeeting has not yet been implemented")
+		})
+	}
 	if api.UserCreateUserHandler == nil {
 		api.UserCreateUserHandler = user.CreateUserHandlerFunc(func(params user.CreateUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation user.CreateUser has not yet been implemented")
+		})
+	}
+	if api.InviteGetInvitesHandler == nil {
+		api.InviteGetInvitesHandler = invite.GetInvitesHandlerFunc(func(params invite.GetInvitesParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation invite.GetInvites has not yet been implemented")
+		})
+	}
+	if api.UserGetUsersHandler == nil {
+		api.UserGetUsersHandler = user.GetUsersHandlerFunc(func(params user.GetUsersParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation user.GetUsers has not yet been implemented")
+		})
+	}
+	if api.UserLoginUserHandler == nil {
+		api.UserLoginUserHandler = user.LoginUserHandlerFunc(func(params user.LoginUserParams) middleware.Responder {
+			return middleware.NotImplemented("operation user.LoginUser has not yet been implemented")
 		})
 	}
 
