@@ -322,10 +322,16 @@ func init() {
       "properties": {
         "code": {
           "description": "Код ошибки\n409 - пользователь уже существует\n500 - ошибка на стороне сервера\n",
+          "default": 500,
           "enum": [
             409,
             500
           ]
+        },
+        "message": {
+          "description": "Сообщение",
+          "type": "string",
+          "default": "Неизвестная ошибка"
         }
       }
     },
@@ -822,10 +828,16 @@ func init() {
       "properties": {
         "code": {
           "description": "Код ошибки\n409 - пользователь уже существует\n500 - ошибка на стороне сервера\n",
+          "default": 500,
           "enum": [
             409,
             500
           ]
+        },
+        "message": {
+          "description": "Сообщение",
+          "type": "string",
+          "default": "Неизвестная ошибка"
         }
       }
     },

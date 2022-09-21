@@ -208,6 +208,11 @@ definitions:
         enum:
           - 409
           - 500
+        default: 500
+      message:
+        type: string
+        description: Сообщение
+        default: Неизвестная ошибка
 
   GetUsersResponse:
     type: object

@@ -6,6 +6,8 @@ import (
 	"github.com/apex/log/handlers/text"
 	"github.com/racoon-devel/calendar/internal/config"
 	"github.com/racoon-devel/calendar/internal/server"
+	"github.com/racoon-devel/calendar/internal/service"
+	"github.com/racoon-devel/calendar/internal/storage"
 	"os"
 )
 
@@ -27,7 +29,14 @@ func main() {
 	}
 	log.Infof("configuration loaded: %+v", cfg)
 
-	srv := server.Server{}
+	conn, err := storage.New(&cfg.Database)
+	if err != nil {
+		log.Fatalf("connect to storage failed: %s", err)
+	}
+
+	srv := server.Server{
+		Calendar: service.NewCalendar(conn),
+	}
 	if err := srv.ListenAndServer(cfg.Http.Endpoint); err != nil {
 		log.Fatalf("server error: %s", err)
 	}

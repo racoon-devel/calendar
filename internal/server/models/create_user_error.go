@@ -27,6 +27,9 @@ type CreateUserError struct {
 	// Required: true
 	// Enum: [409 500]
 	Code interface{} `json:"code"`
+
+	// Сообщение
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this create user error
