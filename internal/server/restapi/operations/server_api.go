@@ -19,6 +19,8 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/racoon-devel/calendar/internal/server/restapi/operations/invite"
+	"github.com/racoon-devel/calendar/internal/server/restapi/operations/meeting"
 	"github.com/racoon-devel/calendar/internal/server/restapi/operations/user"
 )
 
@@ -44,14 +46,20 @@ func NewServerAPI(spec *loads.Document) *ServerAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
-		UserGetUserHandler: user.GetUserHandlerFunc(func(params user.GetUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation user.GetUser has not yet been implemented")
-		}),
-		UserPostUserLoginHandler: user.PostUserLoginHandlerFunc(func(params user.PostUserLoginParams) middleware.Responder {
-			return middleware.NotImplemented("operation user.PostUserLogin has not yet been implemented")
+		MeetingCreateMeetingHandler: meeting.CreateMeetingHandlerFunc(func(params meeting.CreateMeetingParams) middleware.Responder {
+			return middleware.NotImplemented("operation meeting.CreateMeeting has not yet been implemented")
 		}),
 		UserCreateUserHandler: user.CreateUserHandlerFunc(func(params user.CreateUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation user.CreateUser has not yet been implemented")
+		}),
+		InviteGetInvitesHandler: invite.GetInvitesHandlerFunc(func(params invite.GetInvitesParams) middleware.Responder {
+			return middleware.NotImplemented("operation invite.GetInvites has not yet been implemented")
+		}),
+		UserGetUsersHandler: user.GetUsersHandlerFunc(func(params user.GetUsersParams) middleware.Responder {
+			return middleware.NotImplemented("operation user.GetUsers has not yet been implemented")
+		}),
+		UserLoginUserHandler: user.LoginUserHandlerFunc(func(params user.LoginUserParams) middleware.Responder {
+			return middleware.NotImplemented("operation user.LoginUser has not yet been implemented")
 		}),
 	}
 }
@@ -89,12 +97,16 @@ type ServerAPI struct {
 	//   - application/json
 	JSONProducer runtime.Producer
 
-	// UserGetUserHandler sets the operation handler for the get user operation
-	UserGetUserHandler user.GetUserHandler
-	// UserPostUserLoginHandler sets the operation handler for the post user login operation
-	UserPostUserLoginHandler user.PostUserLoginHandler
+	// MeetingCreateMeetingHandler sets the operation handler for the create meeting operation
+	MeetingCreateMeetingHandler meeting.CreateMeetingHandler
 	// UserCreateUserHandler sets the operation handler for the create user operation
 	UserCreateUserHandler user.CreateUserHandler
+	// InviteGetInvitesHandler sets the operation handler for the get invites operation
+	InviteGetInvitesHandler invite.GetInvitesHandler
+	// UserGetUsersHandler sets the operation handler for the get users operation
+	UserGetUsersHandler user.GetUsersHandler
+	// UserLoginUserHandler sets the operation handler for the login user operation
+	UserLoginUserHandler user.LoginUserHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -172,14 +184,20 @@ func (o *ServerAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.UserGetUserHandler == nil {
-		unregistered = append(unregistered, "user.GetUserHandler")
-	}
-	if o.UserPostUserLoginHandler == nil {
-		unregistered = append(unregistered, "user.PostUserLoginHandler")
+	if o.MeetingCreateMeetingHandler == nil {
+		unregistered = append(unregistered, "meeting.CreateMeetingHandler")
 	}
 	if o.UserCreateUserHandler == nil {
 		unregistered = append(unregistered, "user.CreateUserHandler")
+	}
+	if o.InviteGetInvitesHandler == nil {
+		unregistered = append(unregistered, "invite.GetInvitesHandler")
+	}
+	if o.UserGetUsersHandler == nil {
+		unregistered = append(unregistered, "user.GetUsersHandler")
+	}
+	if o.UserLoginUserHandler == nil {
+		unregistered = append(unregistered, "user.LoginUserHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -269,18 +287,26 @@ func (o *ServerAPI) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/user"] = user.NewGetUser(o.context, o.UserGetUserHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/user/login"] = user.NewPostUserLogin(o.context, o.UserPostUserLoginHandler)
+	o.handlers["POST"]["/meeting"] = meeting.NewCreateMeeting(o.context, o.MeetingCreateMeetingHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/user"] = user.NewCreateUser(o.context, o.UserCreateUserHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/invite"] = invite.NewGetInvites(o.context, o.InviteGetInvitesHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/user"] = user.NewGetUsers(o.context, o.UserGetUsersHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/user/login"] = user.NewLoginUser(o.context, o.UserLoginUserHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

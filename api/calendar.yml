@@ -9,6 +9,8 @@ tags:
     description: Пользователь календаря
   - name: meeting
     description: Встреча
+  - name: invite
+    description: Приглашение на встречу
 
 paths:
   /user:
@@ -42,6 +44,7 @@ paths:
         - user
       summary: Получение списка всех пользователей
       description: Вернуть список имен и фамилий пользователей (требует авторизацию)
+      operationId: getUsers
       responses:
         '200':
           description: Список пользователей (в идеале бы прикрутить поиск по имени и фамилии, но для простоты оставлю так)
@@ -57,6 +60,7 @@ paths:
       tags:
         - user
       summary: Вход в систему
+      operationId: loginUser
       parameters:
         - name: credentials
           in: body
@@ -71,6 +75,46 @@ paths:
           description: Доступ запрещен
           schema:
             $ref: "#/definitions/Dummy"
+        '500':
+          description: Ошибка на стороне сервера
+          schema:
+            $ref: "#/definitions/Dummy"
+  /meeting:
+    post:
+      tags:
+        - meeting
+      summary: Создать встречу
+      operationId: createMeeting
+      parameters:
+        - name: meeting
+          in: body
+          schema:
+            $ref: "#/definitions/CreateMeetingRequest"
+      responses:
+        '201':
+          description: Встреча создана
+          schema:
+            $ref: "#/definitions/CreateMeetingResponse"
+        '400':
+          description: Невозможно выполнить запрос
+          schema:
+            $ref: "#/definitions/CreateMeetingErrorResponse"
+        '500':
+          description: Ошибка на стороне сервера
+          schema:
+            $ref: "#/definitions/Dummy"
+
+  /invite:
+    get:
+      tags:
+        - invite
+      summary: Получить информацию о приглашениях для текущего пользователя
+      operationId: getInvites
+      responses:
+        '200':
+          description: Список приглашений
+          schema:
+            $ref: "#/definitions/GetInvitesResponse"
         '500':
           description: Ошибка на стороне сервера
           schema:
@@ -153,7 +197,87 @@ definitions:
   LoginResponse:
     type: object
     properties:
-      access_token:
+      accessToken:
         type: string
 
+  CreateMeetingRequest:
+    type: object
+    additionalProperties: false
+    required:
+      - title
+      - startTime
+      - duration
+    properties:
+      title:
+        type: string
+        minLength: 1
+        maxLength: 64
+        description: Заголовок встречи
+      description:
+        type: string
+        maxLength: 1000
+        description: Описание встречи
+      private:
+        type: boolean
+        default: false
+        description: Приватность деталей встречи
+      notify:
+        type: integer
+        default: null
+        minimum: 1
+        description: Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)
+      rrule:
+        type: string
+        default: null
+        description: Повторение задачи (формат RRULE, RFC5545)
+        externalDocs:
+          url: https://www.rfc-editor.org/rfc/rfc5545
+      startTime:
+        type: string
+        description: Временной интервал начала встречи (формат - часы:минуты, 24h-day)
+        pattern: "^(?:([01]?\\d|2[0-3]):([0-5]?\\d))$"
+        example: "20:35"
+      duration:
+        type: integer
+        description: Длительность встречи (минуты)
+        minimum: 5
+        maximum: 1440
+      users:
+        type: array
+        items:
+          type: integer
+          description: ID приглашенного пользователя
 
+
+  CreateMeetingResponse:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+        description: ID созданной задачи
+
+  CreateMeetingErrorResponse:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        type: integer
+        description: Код ошибки (700 - пользователь, создающий встречу занят в указанное время, 701 - неверный формат для RRULE, 702 - не найден приглашенный пользователь)
+        enum:
+          - 700
+          - 701
+          - 702
+
+  GetInvitesResponse:
+    type: object
+    required:
+      - invites
+    properties:
+      invites:
+        type: array
+        items:
+          type: integer
+          description: Идентификаторы встреч, на которые пригласили пользователя

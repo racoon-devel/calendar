@@ -25,6 +25,67 @@ func init() {
     "version": "1.0.0"
   },
   "paths": {
+    "/invite": {
+      "get": {
+        "tags": [
+          "invite"
+        ],
+        "summary": "Получить информацию о приглашениях для текущего пользователя",
+        "operationId": "getInvites",
+        "responses": {
+          "200": {
+            "description": "Список приглашений",
+            "schema": {
+              "$ref": "#/definitions/GetInvitesResponse"
+            }
+          },
+          "500": {
+            "description": "Ошибка на стороне сервера",
+            "schema": {
+              "$ref": "#/definitions/Dummy"
+            }
+          }
+        }
+      }
+    },
+    "/meeting": {
+      "post": {
+        "tags": [
+          "meeting"
+        ],
+        "summary": "Создать встречу",
+        "operationId": "createMeeting",
+        "parameters": [
+          {
+            "name": "meeting",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateMeetingRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Встреча создана",
+            "schema": {
+              "$ref": "#/definitions/CreateMeetingResponse"
+            }
+          },
+          "400": {
+            "description": "Невозможно выполнить запрос",
+            "schema": {
+              "$ref": "#/definitions/CreateMeetingErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Ошибка на стороне сервера",
+            "schema": {
+              "$ref": "#/definitions/Dummy"
+            }
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "description": "Вернуть список имен и фамилий пользователей (требует авторизацию)",
@@ -32,6 +93,7 @@ func init() {
           "user"
         ],
         "summary": "Получение списка всех пользователей",
+        "operationId": "getUsers",
         "responses": {
           "200": {
             "description": "Список пользователей (в идеале бы прикрутить поиск по имени и фамилии, но для простоты оставлю так)",
@@ -91,6 +153,7 @@ func init() {
           "user"
         ],
         "summary": "Вход в систему",
+        "operationId": "loginUser",
         "parameters": [
           {
             "name": "credentials",
@@ -124,6 +187,93 @@ func init() {
     }
   },
   "definitions": {
+    "CreateMeetingErrorResponse": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки (700 - пользователь, создающий встречу занят в указанное время, 701 - неверный формат для RRULE, 702 - не найден приглашенный пользователь)",
+          "type": "integer",
+          "enum": [
+            700,
+            701,
+            702
+          ]
+        }
+      }
+    },
+    "CreateMeetingRequest": {
+      "type": "object",
+      "required": [
+        "title",
+        "startTime",
+        "duration"
+      ],
+      "properties": {
+        "description": {
+          "description": "Описание встречи",
+          "type": "string",
+          "maxLength": 1000
+        },
+        "duration": {
+          "description": "Длительность встречи (минуты)",
+          "type": "integer",
+          "maximum": 1440,
+          "minimum": 5
+        },
+        "notify": {
+          "description": "Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)",
+          "type": "integer",
+          "minimum": 1
+        },
+        "private": {
+          "description": "Приватность деталей встречи",
+          "type": "boolean",
+          "default": false
+        },
+        "rrule": {
+          "description": "Повторение задачи (формат RRULE, RFC5545)",
+          "type": "string",
+          "externalDocs": {
+            "url": "https://www.rfc-editor.org/rfc/rfc5545"
+          }
+        },
+        "startTime": {
+          "description": "Временной интервал начала встречи (формат - часы:минуты, 24h-day)",
+          "type": "string",
+          "pattern": "^(?:([01]?\\d|2[0-3]):([0-5]?\\d))$",
+          "example": "20:35"
+        },
+        "title": {
+          "description": "Заголовок встречи",
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 1
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "description": "ID приглашенного пользователя",
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "CreateMeetingResponse": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "description": "ID созданной задачи",
+          "type": "integer"
+        }
+      }
+    },
     "CreateUserRequest": {
       "type": "object",
       "required": [
@@ -167,6 +317,21 @@ func init() {
     },
     "Dummy": {
       "type": "object"
+    },
+    "GetInvitesResponse": {
+      "type": "object",
+      "required": [
+        "invites"
+      ],
+      "properties": {
+        "invites": {
+          "type": "array",
+          "items": {
+            "description": "Идентификаторы встреч, на которые пригласили пользователя",
+            "type": "integer"
+          }
+        }
+      }
     },
     "GetUsersResponse": {
       "type": "object",
@@ -217,7 +382,7 @@ func init() {
     "LoginResponse": {
       "type": "object",
       "properties": {
-        "access_token": {
+        "accessToken": {
           "type": "string"
         }
       }
@@ -237,6 +402,10 @@ func init() {
     {
       "description": "Встреча",
       "name": "meeting"
+    },
+    {
+      "description": "Приглашение на встречу",
+      "name": "invite"
     }
   ]
 }`))
@@ -248,6 +417,67 @@ func init() {
     "version": "1.0.0"
   },
   "paths": {
+    "/invite": {
+      "get": {
+        "tags": [
+          "invite"
+        ],
+        "summary": "Получить информацию о приглашениях для текущего пользователя",
+        "operationId": "getInvites",
+        "responses": {
+          "200": {
+            "description": "Список приглашений",
+            "schema": {
+              "$ref": "#/definitions/GetInvitesResponse"
+            }
+          },
+          "500": {
+            "description": "Ошибка на стороне сервера",
+            "schema": {
+              "$ref": "#/definitions/Dummy"
+            }
+          }
+        }
+      }
+    },
+    "/meeting": {
+      "post": {
+        "tags": [
+          "meeting"
+        ],
+        "summary": "Создать встречу",
+        "operationId": "createMeeting",
+        "parameters": [
+          {
+            "name": "meeting",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateMeetingRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Встреча создана",
+            "schema": {
+              "$ref": "#/definitions/CreateMeetingResponse"
+            }
+          },
+          "400": {
+            "description": "Невозможно выполнить запрос",
+            "schema": {
+              "$ref": "#/definitions/CreateMeetingErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Ошибка на стороне сервера",
+            "schema": {
+              "$ref": "#/definitions/Dummy"
+            }
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "description": "Вернуть список имен и фамилий пользователей (требует авторизацию)",
@@ -255,6 +485,7 @@ func init() {
           "user"
         ],
         "summary": "Получение списка всех пользователей",
+        "operationId": "getUsers",
         "responses": {
           "200": {
             "description": "Список пользователей (в идеале бы прикрутить поиск по имени и фамилии, но для простоты оставлю так)",
@@ -314,6 +545,7 @@ func init() {
           "user"
         ],
         "summary": "Вход в систему",
+        "operationId": "loginUser",
         "parameters": [
           {
             "name": "credentials",
@@ -347,6 +579,93 @@ func init() {
     }
   },
   "definitions": {
+    "CreateMeetingErrorResponse": {
+      "type": "object",
+      "required": [
+        "code"
+      ],
+      "properties": {
+        "code": {
+          "description": "Код ошибки (700 - пользователь, создающий встречу занят в указанное время, 701 - неверный формат для RRULE, 702 - не найден приглашенный пользователь)",
+          "type": "integer",
+          "enum": [
+            700,
+            701,
+            702
+          ]
+        }
+      }
+    },
+    "CreateMeetingRequest": {
+      "type": "object",
+      "required": [
+        "title",
+        "startTime",
+        "duration"
+      ],
+      "properties": {
+        "description": {
+          "description": "Описание встречи",
+          "type": "string",
+          "maxLength": 1000
+        },
+        "duration": {
+          "description": "Длительность встречи (минуты)",
+          "type": "integer",
+          "maximum": 1440,
+          "minimum": 5
+        },
+        "notify": {
+          "description": "Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)",
+          "type": "integer",
+          "minimum": 1
+        },
+        "private": {
+          "description": "Приватность деталей встречи",
+          "type": "boolean",
+          "default": false
+        },
+        "rrule": {
+          "description": "Повторение задачи (формат RRULE, RFC5545)",
+          "type": "string",
+          "externalDocs": {
+            "url": "https://www.rfc-editor.org/rfc/rfc5545"
+          }
+        },
+        "startTime": {
+          "description": "Временной интервал начала встречи (формат - часы:минуты, 24h-day)",
+          "type": "string",
+          "pattern": "^(?:([01]?\\d|2[0-3]):([0-5]?\\d))$",
+          "example": "20:35"
+        },
+        "title": {
+          "description": "Заголовок встречи",
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 1
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "description": "ID приглашенного пользователя",
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "CreateMeetingResponse": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "description": "ID созданной задачи",
+          "type": "integer"
+        }
+      }
+    },
     "CreateUserRequest": {
       "type": "object",
       "required": [
@@ -390,6 +709,21 @@ func init() {
     },
     "Dummy": {
       "type": "object"
+    },
+    "GetInvitesResponse": {
+      "type": "object",
+      "required": [
+        "invites"
+      ],
+      "properties": {
+        "invites": {
+          "type": "array",
+          "items": {
+            "description": "Идентификаторы встреч, на которые пригласили пользователя",
+            "type": "integer"
+          }
+        }
+      }
     },
     "GetUsersResponse": {
       "type": "object",
@@ -443,7 +777,7 @@ func init() {
     "LoginResponse": {
       "type": "object",
       "properties": {
-        "access_token": {
+        "accessToken": {
           "type": "string"
         }
       }
@@ -463,6 +797,10 @@ func init() {
     {
       "description": "Встреча",
       "name": "meeting"
+    },
+    {
+      "description": "Приглашение на встречу",
+      "name": "invite"
     }
   ]
 }`))

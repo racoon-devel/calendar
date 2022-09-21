@@ -18,7 +18,7 @@ import (
 type LoginResponse struct {
 
 	// access token
-	AccessToken string `json:"access_token,omitempty"`
+	AccessToken string `json:"accessToken,omitempty"`
 }
 
 // Validate validates this login response
