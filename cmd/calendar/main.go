@@ -37,6 +37,10 @@ func main() {
 	srv := server.Server{
 		Calendar: service.NewCalendar(conn),
 	}
+
+	if err := srv.Calendar.LoadCache(); err != nil {
+		log.Fatalf("load cache failed: %+w", err)
+	}
 	if err := srv.ListenAndServer(cfg.Http.Endpoint); err != nil {
 		log.Fatalf("server error: %s", err)
 	}

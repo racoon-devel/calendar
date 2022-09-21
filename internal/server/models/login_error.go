@@ -27,6 +27,10 @@ type LoginError struct {
 	// Required: true
 	// Enum: [403 500]
 	Code interface{} `json:"code"`
+
+	// message
+	// Required: true
+	Message *string `json:"message"`
 }
 
 // Validate validates this login error
@@ -34,6 +38,10 @@ func (m *LoginError) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMessage(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -67,6 +75,15 @@ func (m *LoginError) validateCode(formats strfmt.Registry) error {
 
 	if m.Code == nil {
 		return errors.Required("code", "body", nil)
+	}
+
+	return nil
+}
+
+func (m *LoginError) validateMessage(formats strfmt.Registry) error {
+
+	if err := validate.Required("message", "body", m.Message); err != nil {
+		return err
 	}
 
 	return nil

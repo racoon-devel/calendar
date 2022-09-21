@@ -456,7 +456,8 @@ func init() {
     "LoginError": {
       "type": "object",
       "required": [
-        "code"
+        "code",
+        "message"
       ],
       "properties": {
         "code": {
@@ -465,6 +466,10 @@ func init() {
             403,
             500
           ]
+        },
+        "message": {
+          "type": "string",
+          "default": "Описание ошибки"
         }
       }
     },
@@ -481,7 +486,8 @@ func init() {
         "password": {
           "$ref": "#/definitions/Password"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "LoginResponse": {
       "type": "object",
@@ -498,7 +504,7 @@ func init() {
       "minLength": 8
     },
     "principal": {
-      "type": "string"
+      "type": "integer"
     }
   },
   "securityDefinitions": {
@@ -965,7 +971,8 @@ func init() {
     "LoginError": {
       "type": "object",
       "required": [
-        "code"
+        "code",
+        "message"
       ],
       "properties": {
         "code": {
@@ -974,6 +981,10 @@ func init() {
             403,
             500
           ]
+        },
+        "message": {
+          "type": "string",
+          "default": "Описание ошибки"
         }
       }
     },
@@ -990,7 +1001,8 @@ func init() {
         "password": {
           "$ref": "#/definitions/Password"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "LoginResponse": {
       "type": "object",
@@ -1007,7 +1019,7 @@ func init() {
       "minLength": 8
     },
     "principal": {
-      "type": "string"
+      "type": "integer"
     }
   },
   "securityDefinitions": {

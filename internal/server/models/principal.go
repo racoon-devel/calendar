@@ -14,7 +14,7 @@ import (
 // Principal principal
 //
 // swagger:model principal
-type Principal string
+type Principal int64
 
 // Validate validates this principal
 func (m Principal) Validate(formats strfmt.Registry) error {

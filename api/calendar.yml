@@ -246,6 +246,7 @@ definitions:
           - 500
   LoginRequest:
     type: object
+    additionalProperties: false
     required:
       - login
       - password
@@ -265,6 +266,7 @@ definitions:
     type: object
     required:
       - code
+      - message
     properties:
       code:
         description: |
@@ -274,6 +276,9 @@ definitions:
         enum:
           - 403
           - 500
+      message:
+        type: string
+        default: Описание ошибки
 
   CreateMeetingRequest:
     type: object
@@ -379,4 +384,4 @@ definitions:
           500 - ошибка на стороне сервера
 
   principal:
-    type: string
+    type: integer
