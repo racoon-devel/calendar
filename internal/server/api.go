@@ -9,6 +9,7 @@ import (
 func (s *Server) configureAPI(api *operations.ServerAPI) {
 	api.UserCreateUserHandler = user.CreateUserHandlerFunc(s.createUser)
 	api.UserLoginUserHandler = user.LoginUserHandlerFunc(s.login)
+	api.UserGetUsersHandler = user.GetUsersHandlerFunc(s.getUsers)
 
 	api.KeyAuth = func(accessToken string) (*models.Principal, error) {
 		userId, err := s.Calendar.CheckAccessIsGranted(accessToken)

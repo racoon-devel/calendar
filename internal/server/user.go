@@ -64,3 +64,28 @@ func (s *Server) login(params user.LoginUserParams) middleware.Responder {
 
 	return user.NewLoginUserOK().WithPayload(&models.LoginResponse{AccessToken: accessToken})
 }
+
+func (s *Server) getUsers(params user.GetUsersParams, id *models.Principal) middleware.Responder {
+	logCtx := log.WithFields(&log.Fields{
+		"from": "rest",
+		"req":  "getUsers",
+		"user": *id,
+	})
+
+	users, err := s.Calendar.GetAllUsers()
+	if err != nil {
+		logCtx.Errorf("retrieve all users failed: %w", err)
+		return user.NewGetUsersInternalServerError()
+	}
+	resp := models.GetUsersResponse{
+		Users: make([]*models.GetUsersResponseUsersItems0, len(users)),
+	}
+	for i, u := range users {
+		resp.Users[i] = new(models.GetUsersResponseUsersItems0)
+		resp.Users[i].ID = int64(u.ID)
+		resp.Users[i].Name = u.Name
+		resp.Users[i].Surname = u.Surname
+	}
+
+	return user.NewGetUsersOK().WithPayload(&resp)
+}

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/racoon-devel/calendar/internal/model"
+	"github.com/racoon-devel/calendar/internal/storage"
 	"golang.org/x/crypto/bcrypt"
-	"sync"
 )
 
 // User описывает интерфейс сервиса менеджмента пользователей
@@ -14,6 +14,7 @@ type User interface {
 	CreateUser(user model.User) (id uint, err error)
 	Login(login, password string) (accessToken string, err error)
 	CheckAccessIsGranted(accessToken string) (id uint, err error)
+	GetAllUsers() ([]model.User, error)
 }
 
 var (
@@ -23,39 +24,10 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
-type userService struct {
-	mutex       sync.RWMutex
-	loginToUser map[string]*model.User
-	idToUser    map[uint]*model.User
-}
-
+// todo: вынести в Env
 var authSecretKey = []byte("6sbd92736adnlnjlanlsn3833")
 
-func (c *calendar) loadUsers() error {
-	c.u.mutex.Lock()
-	defer c.u.mutex.Unlock()
-
-	users, err := c.db.LoadUsers()
-	if err != nil {
-		return err
-	}
-
-	for i := range users {
-		c.u.idToUser[users[i].ID] = &users[i]
-		c.u.loginToUser[users[i].Login] = &users[i]
-	}
-
-	return nil
-}
-
-func (s *calendar) CreateUser(user model.User) (id uint, err error) {
-	s.u.mutex.Lock()
-	defer s.u.mutex.Unlock()
-
-	if _, ok := s.u.loginToUser[user.Login]; ok {
-		return 0, ErrUserAlreadyExists
-	}
-
+func (c *calendar) CreateUser(user model.User) (id uint, err error) {
 	// хешируем пароль
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)
 	if err != nil {
@@ -64,26 +36,25 @@ func (s *calendar) CreateUser(user model.User) (id uint, err error) {
 	}
 	user.PasswordHash = string(hashedPassword)
 
-	id, err = s.db.CreateUser(user)
+	id, err = c.db.CreateUser(user)
 	if err != nil {
+		if errors.Is(err, storage.ErrRecordAlreadyExists) {
+			err = ErrUserAlreadyExists
+			return
+		}
 		err = fmt.Errorf("couldn't store user to database: %w", err)
 		return
 	}
 
-	user.ID = id
-	s.u.idToUser[id] = &user
-	s.u.loginToUser[user.Login] = &user
-
 	return id, nil
 }
 
-func (s *calendar) Login(login, password string) (accessToken string, err error) {
-	s.u.mutex.RLock()
-	defer s.u.mutex.RUnlock()
+func (c *calendar) Login(login, password string) (accessToken string, err error) {
+	var u *model.User
 
-	u, ok := s.u.loginToUser[login]
-	if !ok {
-		err = ErrInvalidCredentials
+	u, err = c.db.FindUserByLogin(login)
+	if err != nil {
+		err = fmt.Errorf("%w: user not found: %s", ErrInvalidCredentials, err)
 		return
 	}
 
@@ -112,9 +83,10 @@ func (c authClaims) Valid() error {
 	return nil
 }
 
-func (s *calendar) CheckAccessIsGranted(accessToken string) (id uint, err error) {
+func (c *calendar) CheckAccessIsGranted(accessToken string) (id uint, err error) {
 	claims := authClaims{}
 
+	// Доверяем ИДу юзера из подписанной строчки, в БД лезть незачем с учетом того, что пользователи не удалются
 	_, err = jwt.ParseWithClaims(
 		accessToken,
 		&claims,
@@ -125,4 +97,8 @@ func (s *calendar) CheckAccessIsGranted(accessToken string) (id uint, err error)
 
 	id = claims.Id
 	return
+}
+
+func (c *calendar) GetAllUsers() ([]model.User, error) {
+	return c.db.LoadUsers()
 }
