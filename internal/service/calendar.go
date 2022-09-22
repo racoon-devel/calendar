@@ -6,6 +6,7 @@ import (
 
 type Calendar interface {
 	User
+	Meeting
 
 	LoadCache() error
 }

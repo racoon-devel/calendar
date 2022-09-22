@@ -12,6 +12,7 @@ import (
 // Service общий интерфейс, предоставляющий все возможности работы с БД
 type Service interface {
 	UserService
+	MeetingService
 }
 
 type service struct {
@@ -37,6 +38,6 @@ func New(conParams *config.Database) (srv Service, err error) {
 		return
 	}
 
-	err = s.db.AutoMigrate(&model.User{})
+	err = s.db.AutoMigrate(&model.User{}, &model.Meeting{})
 	return
 }
