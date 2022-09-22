@@ -1,7 +1,6 @@
 package recurrent
 
 import (
-	"fmt"
 	"github.com/teambition/rrule-go"
 	"time"
 )
@@ -27,7 +26,6 @@ func Parse(expr string, startTime time.Time, dur time.Duration) (Rule, error) {
 
 	opts.Dtstart = startTime
 	r.r, err = rrule.NewRRule(*opts)
-	fmt.Println(r.r.All())
 	return r, err
 }
 
