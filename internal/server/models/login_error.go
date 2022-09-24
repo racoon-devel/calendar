@@ -28,7 +28,7 @@ type LoginError struct {
 	// Enum: [403 500]
 	Code interface{} `json:"code"`
 
-	// message
+	// Описание ошибки
 	// Required: true
 	Message *string `json:"message"`
 }

@@ -9,11 +9,13 @@ import (
 // Meeting описывает одиночную или повторяющуюся встречу
 type Meeting struct {
 	gorm.Model
-	Title       string
-	Description string
-	Private     bool
+	Owner       uint   `gorm:"not null"`
+	User        User   `gorm:"foreignKey:owner"`
+	Title       string `gorm:"not null"`
+	Description string `gorm:"not null"`
+	Private     bool   `gorm:"not null"`
 	Notify      sql.NullInt32
-	RRule       string
-	StartTime   time.Time
-	DurationMin uint
+	RRule       sql.NullString
+	StartTime   time.Time     `gorm:"not null"`
+	Duration    time.Duration `gorm:"not null"`
 }

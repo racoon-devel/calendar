@@ -21,14 +21,17 @@ import (
 type CreateMeetingError struct {
 
 	// Код ошибки
-	// 400 - неверный формат RRULE
+	// 400 - неверный формат даты или RRULE
 	// 401 - требуется автоизация
-	// 404 - не найден один из приглашенных пользователей
-	// 700 - текущий пользователь занят в момент встречи
+	// 404 - не найден хотя бы один из приглашенных пользователей
+	// 500 - неизвестная ошибка
 	//
 	// Required: true
-	// Enum: [400 401 404 700]
+	// Enum: [400 401 404 500]
 	Code *int64 `json:"code"`
+
+	// message
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this create meeting error
@@ -49,7 +52,7 @@ var createMeetingErrorTypeCodePropEnum []interface{}
 
 func init() {
 	var res []int64
-	if err := json.Unmarshal([]byte(`[400,401,404,700]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`[400,401,404,500]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

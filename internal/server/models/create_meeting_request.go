@@ -11,170 +11,55 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // CreateMeetingRequest create meeting request
 //
 // swagger:model CreateMeetingRequest
 type CreateMeetingRequest struct {
+	Meeting
+}
 
-	// Описание встречи
-	// Max Length: 1000
-	Description string `json:"description,omitempty"`
+// UnmarshalJSON unmarshals this object from a JSON structure
+func (m *CreateMeetingRequest) UnmarshalJSON(raw []byte) error {
+	// AO0
+	var aO0 Meeting
+	if err := swag.ReadJSON(raw, &aO0); err != nil {
+		return err
+	}
+	m.Meeting = aO0
 
-	// Длительность встречи (минуты)
-	// Required: true
-	// Maximum: 1440
-	// Minimum: 5
-	Duration *int64 `json:"duration"`
+	return nil
+}
 
-	// Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)
-	// Minimum: 1
-	Notify int64 `json:"notify,omitempty"`
+// MarshalJSON marshals this object to a JSON structure
+func (m CreateMeetingRequest) MarshalJSON() ([]byte, error) {
+	_parts := make([][]byte, 0, 1)
 
-	// Приватность деталей встречи
-	Private *bool `json:"private,omitempty"`
-
-	// Повторение задачи (формат RRULE, RFC5545)
-	Rrule string `json:"rrule,omitempty"`
-
-	// Временной интервал начала встречи (формат - часы:минуты, 24h-day)
-	// Example: 20:35
-	// Required: true
-	// Pattern: ^(?:([01]?\d|2[0-3]):([0-5]?\d))$
-	StartTime *string `json:"startTime"`
-
-	// Заголовок встречи
-	// Required: true
-	// Max Length: 64
-	// Min Length: 1
-	Title *string `json:"title"`
-
-	// users
-	Users []int64 `json:"users"`
+	aO0, err := swag.WriteJSON(m.Meeting)
+	if err != nil {
+		return nil, err
+	}
+	_parts = append(_parts, aO0)
+	return swag.ConcatJSON(_parts...), nil
 }
 
 // Validate validates this create meeting request
 func (m *CreateMeetingRequest) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validate this create meeting request based on the context it is used
+func (m *CreateMeetingRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDescription(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateDuration(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateNotify(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateStartTime(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateTitle(formats); err != nil {
+	// validation for a type composition with Meeting
+	if err := m.Meeting.ContextValidate(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *CreateMeetingRequest) validateDescription(formats strfmt.Registry) error {
-	if swag.IsZero(m.Description) { // not required
-		return nil
-	}
-
-	if err := validate.MaxLength("description", "body", m.Description, 1000); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CreateMeetingRequest) validateDuration(formats strfmt.Registry) error {
-
-	if err := validate.Required("duration", "body", m.Duration); err != nil {
-		return err
-	}
-
-	if err := validate.MinimumInt("duration", "body", *m.Duration, 5, false); err != nil {
-		return err
-	}
-
-	if err := validate.MaximumInt("duration", "body", *m.Duration, 1440, false); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CreateMeetingRequest) validateNotify(formats strfmt.Registry) error {
-	if swag.IsZero(m.Notify) { // not required
-		return nil
-	}
-
-	if err := validate.MinimumInt("notify", "body", m.Notify, 1, false); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CreateMeetingRequest) validateStartTime(formats strfmt.Registry) error {
-
-	if err := validate.Required("startTime", "body", m.StartTime); err != nil {
-		return err
-	}
-
-	if err := validate.Pattern("startTime", "body", *m.StartTime, `^(?:([01]?\d|2[0-3]):([0-5]?\d))$`); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *CreateMeetingRequest) validateTitle(formats strfmt.Registry) error {
-
-	if err := validate.Required("title", "body", m.Title); err != nil {
-		return err
-	}
-
-	if err := validate.MinLength("title", "body", *m.Title, 1); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("title", "body", *m.Title, 64); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validates this create meeting request based on context it is used
-func (m *CreateMeetingRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *CreateMeetingRequest) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *CreateMeetingRequest) UnmarshalBinary(b []byte) error {
-	var res CreateMeetingRequest
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
 	return nil
 }

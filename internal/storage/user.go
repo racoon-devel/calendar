@@ -12,6 +12,7 @@ type UserService interface {
 	LoadUsers() ([]model.User, error)
 	CreateUser(user model.User) (id uint, err error)
 	FindUserByLogin(login string) (user *model.User, err error)
+	UsersExist(users []uint) (bool, error)
 }
 
 func (s service) LoadUsers() ([]model.User, error) {
@@ -41,4 +42,16 @@ func (s service) FindUserByLogin(login string) (user *model.User, err error) {
 	user = &model.User{}
 	err = s.db.Where("login = ?", login).Take(user).Error
 	return
+}
+
+func (s service) UsersExist(users []uint) (bool, error) {
+	if len(users) == 0 {
+		return true, nil
+	}
+	var count int64
+	err := s.db.Model(&model.User{}).Where(users).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count == int64(len(users)), nil
 }

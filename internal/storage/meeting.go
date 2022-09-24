@@ -12,8 +12,22 @@ type MeetingService interface {
 
 func (s service) CreateMeeting(m model.Meeting, users []uint) (id uint, err error) {
 	err = s.db.Transaction(func(tx *gorm.DB) error {
-		// TODO: invites users
-		return tx.Create(&m).Error
+		err := tx.Create(&m).Error
+		if err == nil {
+			// создаем приглашение для всех пользователей из списка
+			for _, u := range users {
+				invite := model.Invite{
+					UserID:    u,
+					MeetingID: m.ID,
+					Approved:  false,
+				}
+				if err = tx.Create(&invite).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		return err
 	})
 	id = m.ID
 	return

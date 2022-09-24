@@ -7,6 +7,7 @@ import (
 	"github.com/racoon-devel/calendar/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // Service общий интерфейс, предоставляющий все возможности работы с БД
@@ -33,11 +34,13 @@ func New(conParams *config.Database) (srv Service, err error) {
 		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		conParams.Host, conParams.User, conParams.Password, conParams.Name, conParams.Port,
 	)
-	s.db, err = gorm.Open(postgres.Open(conStr))
+	s.db, err = gorm.Open(postgres.Open(conStr), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		return
 	}
 
-	err = s.db.AutoMigrate(&model.User{}, &model.Meeting{})
+	err = s.db.AutoMigrate(&model.User{}, &model.Meeting{}, &model.Invite{})
 	return
 }

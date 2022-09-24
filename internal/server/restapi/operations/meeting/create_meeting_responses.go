@@ -62,7 +62,7 @@ func (o *CreateMeetingCreated) WriteResponse(rw http.ResponseWriter, producer ru
 const CreateMeetingBadRequestCode int = 400
 
 /*
-CreateMeetingBadRequest Невозможно выполнить запрос
+CreateMeetingBadRequest Неверные данные в запросе
 
 swagger:response createMeetingBadRequest
 */

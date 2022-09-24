@@ -94,7 +94,7 @@ func init() {
             }
           },
           "400": {
-            "description": "Невозможно выполнить запрос",
+            "description": "Неверные данные в запросе",
             "schema": {
               "$ref": "#/definitions/CreateMeetingError"
             }
@@ -233,74 +233,24 @@ func init() {
       ],
       "properties": {
         "code": {
-          "description": "Код ошибки\n400 - неверный формат RRULE\n401 - требуется автоизация\n404 - не найден один из приглашенных пользователей\n700 - текущий пользователь занят в момент встречи\n",
+          "description": "Код ошибки\n400 - неверный формат даты или RRULE\n401 - требуется автоизация\n404 - не найден хотя бы один из приглашенных пользователей\n500 - неизвестная ошибка\n",
           "type": "integer",
+          "default": 500,
           "enum": [
             400,
             401,
             404,
-            700
+            500
           ]
+        },
+        "message": {
+          "type": "string",
+          "default": "Unknown error"
         }
       }
     },
     "CreateMeetingRequest": {
-      "type": "object",
-      "required": [
-        "title",
-        "startTime",
-        "duration"
-      ],
-      "properties": {
-        "description": {
-          "description": "Описание встречи",
-          "type": "string",
-          "maxLength": 1000
-        },
-        "duration": {
-          "description": "Длительность встречи (минуты)",
-          "type": "integer",
-          "maximum": 1440,
-          "minimum": 5
-        },
-        "notify": {
-          "description": "Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)",
-          "type": "integer",
-          "minimum": 1
-        },
-        "private": {
-          "description": "Приватность деталей встречи",
-          "type": "boolean",
-          "default": false
-        },
-        "rrule": {
-          "description": "Повторение задачи (формат RRULE, RFC5545)",
-          "type": "string",
-          "externalDocs": {
-            "url": "https://www.rfc-editor.org/rfc/rfc5545"
-          }
-        },
-        "startTime": {
-          "description": "Временной интервал начала встречи (формат - часы:минуты, 24h-day)",
-          "type": "string",
-          "pattern": "^(?:([01]?\\d|2[0-3]):([0-5]?\\d))$",
-          "example": "20:35"
-        },
-        "title": {
-          "description": "Заголовок встречи",
-          "type": "string",
-          "maxLength": 64,
-          "minLength": 1
-        },
-        "users": {
-          "type": "array",
-          "items": {
-            "description": "ID приглашенного пользователя",
-            "type": "integer"
-          }
-        }
-      },
-      "additionalProperties": false
+      "$ref": "#/definitions/Meeting"
     },
     "CreateMeetingResponse": {
       "type": "object",
@@ -331,7 +281,7 @@ func init() {
         "message": {
           "description": "Сообщение",
           "type": "string",
-          "default": "Неизвестная ошибка"
+          "default": "Unknown error"
         }
       }
     },
@@ -415,10 +365,15 @@ func init() {
       "properties": {
         "code": {
           "description": "Код ошибки\n401 - требуется авторизация\n500 - ошибка на стороне сервера\n",
+          "default": 500,
           "enum": [
             401,
             500
           ]
+        },
+        "message": {
+          "type": "string",
+          "default": "Unknown error"
         }
       }
     },
@@ -462,14 +417,16 @@ func init() {
       "properties": {
         "code": {
           "description": "Код ошибки\n403 - доступ запрещен\n500 - ошибка на стороне сервера\n",
+          "default": 500,
           "enum": [
             403,
             500
           ]
         },
         "message": {
+          "description": "Описание ошибки",
           "type": "string",
-          "default": "Описание ошибки"
+          "default": "Unknown error"
         }
       }
     },
@@ -496,6 +453,66 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "Meeting": {
+      "type": "object",
+      "required": [
+        "title",
+        "startTime",
+        "duration"
+      ],
+      "properties": {
+        "description": {
+          "description": "Описание встречи",
+          "type": "string",
+          "maxLength": 1000
+        },
+        "duration": {
+          "description": "Длительность встречи (минуты)",
+          "type": "integer",
+          "maximum": 1440,
+          "minimum": 5
+        },
+        "id": {
+          "description": "Идентификатор встречи",
+          "type": "integer"
+        },
+        "notify": {
+          "description": "Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)",
+          "type": "integer",
+          "minimum": 1
+        },
+        "private": {
+          "description": "Приватность деталей встречи",
+          "type": "boolean"
+        },
+        "rrule": {
+          "description": "Повторение задачи (формат RRULE, RFC5545)",
+          "type": "string",
+          "externalDocs": {
+            "url": "https://www.rfc-editor.org/rfc/rfc5545"
+          }
+        },
+        "startTime": {
+          "description": "Временной интервал начала встречи (формат - RFC3339)",
+          "type": "string",
+          "example": "1996-12-19T16:39:57Z"
+        },
+        "title": {
+          "description": "Заголовок встречи",
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 1
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "description": "ID приглашенного пользователя",
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "Password": {
       "description": "Пароль",
@@ -606,7 +623,7 @@ func init() {
             }
           },
           "400": {
-            "description": "Невозможно выполнить запрос",
+            "description": "Неверные данные в запросе",
             "schema": {
               "$ref": "#/definitions/CreateMeetingError"
             }
@@ -745,74 +762,24 @@ func init() {
       ],
       "properties": {
         "code": {
-          "description": "Код ошибки\n400 - неверный формат RRULE\n401 - требуется автоизация\n404 - не найден один из приглашенных пользователей\n700 - текущий пользователь занят в момент встречи\n",
+          "description": "Код ошибки\n400 - неверный формат даты или RRULE\n401 - требуется автоизация\n404 - не найден хотя бы один из приглашенных пользователей\n500 - неизвестная ошибка\n",
           "type": "integer",
+          "default": 500,
           "enum": [
             400,
             401,
             404,
-            700
+            500
           ]
+        },
+        "message": {
+          "type": "string",
+          "default": "Unknown error"
         }
       }
     },
     "CreateMeetingRequest": {
-      "type": "object",
-      "required": [
-        "title",
-        "startTime",
-        "duration"
-      ],
-      "properties": {
-        "description": {
-          "description": "Описание встречи",
-          "type": "string",
-          "maxLength": 1000
-        },
-        "duration": {
-          "description": "Длительность встречи (минуты)",
-          "type": "integer",
-          "maximum": 1440,
-          "minimum": 5
-        },
-        "notify": {
-          "description": "Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)",
-          "type": "integer",
-          "minimum": 1
-        },
-        "private": {
-          "description": "Приватность деталей встречи",
-          "type": "boolean",
-          "default": false
-        },
-        "rrule": {
-          "description": "Повторение задачи (формат RRULE, RFC5545)",
-          "type": "string",
-          "externalDocs": {
-            "url": "https://www.rfc-editor.org/rfc/rfc5545"
-          }
-        },
-        "startTime": {
-          "description": "Временной интервал начала встречи (формат - часы:минуты, 24h-day)",
-          "type": "string",
-          "pattern": "^(?:([01]?\\d|2[0-3]):([0-5]?\\d))$",
-          "example": "20:35"
-        },
-        "title": {
-          "description": "Заголовок встречи",
-          "type": "string",
-          "maxLength": 64,
-          "minLength": 1
-        },
-        "users": {
-          "type": "array",
-          "items": {
-            "description": "ID приглашенного пользователя",
-            "type": "integer"
-          }
-        }
-      },
-      "additionalProperties": false
+      "$ref": "#/definitions/Meeting"
     },
     "CreateMeetingResponse": {
       "type": "object",
@@ -843,7 +810,7 @@ func init() {
         "message": {
           "description": "Сообщение",
           "type": "string",
-          "default": "Неизвестная ошибка"
+          "default": "Unknown error"
         }
       }
     },
@@ -927,10 +894,15 @@ func init() {
       "properties": {
         "code": {
           "description": "Код ошибки\n401 - требуется авторизация\n500 - ошибка на стороне сервера\n",
+          "default": 500,
           "enum": [
             401,
             500
           ]
+        },
+        "message": {
+          "type": "string",
+          "default": "Unknown error"
         }
       }
     },
@@ -977,14 +949,16 @@ func init() {
       "properties": {
         "code": {
           "description": "Код ошибки\n403 - доступ запрещен\n500 - ошибка на стороне сервера\n",
+          "default": 500,
           "enum": [
             403,
             500
           ]
         },
         "message": {
+          "description": "Описание ошибки",
           "type": "string",
-          "default": "Описание ошибки"
+          "default": "Unknown error"
         }
       }
     },
@@ -1011,6 +985,66 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "Meeting": {
+      "type": "object",
+      "required": [
+        "title",
+        "startTime",
+        "duration"
+      ],
+      "properties": {
+        "description": {
+          "description": "Описание встречи",
+          "type": "string",
+          "maxLength": 1000
+        },
+        "duration": {
+          "description": "Длительность встречи (минуты)",
+          "type": "integer",
+          "maximum": 1440,
+          "minimum": 5
+        },
+        "id": {
+          "description": "Идентификатор встречи",
+          "type": "integer"
+        },
+        "notify": {
+          "description": "Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)",
+          "type": "integer",
+          "minimum": 1
+        },
+        "private": {
+          "description": "Приватность деталей встречи",
+          "type": "boolean"
+        },
+        "rrule": {
+          "description": "Повторение задачи (формат RRULE, RFC5545)",
+          "type": "string",
+          "externalDocs": {
+            "url": "https://www.rfc-editor.org/rfc/rfc5545"
+          }
+        },
+        "startTime": {
+          "description": "Временной интервал начала встречи (формат - RFC3339)",
+          "type": "string",
+          "example": "1996-12-19T16:39:57Z"
+        },
+        "title": {
+          "description": "Заголовок встречи",
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 1
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "description": "ID приглашенного пользователя",
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "Password": {
       "description": "Пароль",

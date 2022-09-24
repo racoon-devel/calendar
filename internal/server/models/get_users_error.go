@@ -27,6 +27,9 @@ type GetUsersError struct {
 	// Required: true
 	// Enum: [401 500]
 	Code interface{} `json:"code"`
+
+	// message
+	Message *string `json:"message,omitempty"`
 }
 
 // Validate validates this get users error

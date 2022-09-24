@@ -114,7 +114,7 @@ paths:
           schema:
             $ref: "#/definitions/CreateMeetingResponse"
         '400':
-          description: Невозможно выполнить запрос
+          description: Неверные данные в запросе
           schema:
             $ref: "#/definitions/CreateMeetingError"
         '401':
@@ -212,7 +212,7 @@ definitions:
       message:
         type: string
         description: Сообщение
-        default: Неизвестная ошибка
+        default: "Unknown error"
 
   GetUsersResponse:
     type: object
@@ -244,6 +244,10 @@ definitions:
         enum:
           - 401
           - 500
+        default: 500
+      message:
+        type: string
+        default: "Unknown error"
   LoginRequest:
     type: object
     additionalProperties: false
@@ -276,57 +280,14 @@ definitions:
         enum:
           - 403
           - 500
+        default: 500
       message:
         type: string
-        default: Описание ошибки
+        description: Описание ошибки
+        default: "Unknown error"
 
   CreateMeetingRequest:
-    type: object
-    additionalProperties: false
-    required:
-      - title
-      - startTime
-      - duration
-    properties:
-      title:
-        type: string
-        minLength: 1
-        maxLength: 64
-        description: Заголовок встречи
-      description:
-        type: string
-        maxLength: 1000
-        description: Описание встречи
-      private:
-        type: boolean
-        default: false
-        description: Приватность деталей встречи
-      notify:
-        type: integer
-        default: null
-        minimum: 1
-        description: Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)
-      rrule:
-        type: string
-        default: null
-        description: Повторение задачи (формат RRULE, RFC5545)
-        externalDocs:
-          url: https://www.rfc-editor.org/rfc/rfc5545
-      startTime:
-        type: string
-        description: Временной интервал начала встречи (формат - часы:минуты, 24h-day)
-        pattern: "^(?:([01]?\\d|2[0-3]):([0-5]?\\d))$"
-        example: "20:35"
-      duration:
-        type: integer
-        description: Длительность встречи (минуты)
-        minimum: 5
-        maximum: 1440
-      users:
-        type: array
-        items:
-          type: integer
-          description: ID приглашенного пользователя
+    $ref: "#/definitions/Meeting"
 
 
   CreateMeetingResponse:
@@ -347,15 +308,68 @@ definitions:
         type: integer
         description: |
           Код ошибки
-          400 - неверный формат RRULE
+          400 - неверный формат даты или RRULE
           401 - требуется автоизация
-          404 - не найден один из приглашенных пользователей
-          700 - текущий пользователь занят в момент встречи
+          404 - не найден хотя бы один из приглашенных пользователей
+          500 - неизвестная ошибка
         enum:
           - 400
           - 401
           - 404
-          - 700
+          - 500
+        default: 500
+      message:
+        type: string
+        default: "Unknown error"
+
+  Meeting:
+    type: object
+    additionalProperties: false
+    required:
+      - title
+      - startTime
+      - duration
+    properties:
+      id:
+        type: integer
+        description: Идентификатор встречи
+      title:
+        type: string
+        minLength: 1
+        maxLength: 64
+        description: Заголовок встречи
+      description:
+        type: string
+        maxLength: 1000
+        description: Описание встречи
+      private:
+        type: boolean
+        description: Приватность деталей встречи
+      notify:
+        type: integer
+        default: null
+        minimum: 1
+        description: Уведомить пользователя о встрече перед ней (единицы измерения - минуты!)
+      rrule:
+        type: string
+        default: null
+        description: Повторение задачи (формат RRULE, RFC5545)
+        externalDocs:
+          url: https://www.rfc-editor.org/rfc/rfc5545
+      startTime:
+        type: string
+        description: Временной интервал начала встречи (формат - RFC3339)
+        example: "1996-12-19T16:39:57Z"
+      duration:
+        type: integer
+        description: Длительность встречи (минуты)
+        minimum: 5
+        maximum: 1440
+      users:
+        type: array
+        items:
+          type: integer
+          description: ID приглашенного пользователя
 
   GetInvitesResponse:
     type: object
